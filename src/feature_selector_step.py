@@ -1,4 +1,4 @@
-from feature_selector import FeatureSelector
+from src.feature_selector import FeatureSelector
 from abc import abstractmethod
 import time
 
@@ -22,4 +22,6 @@ class FeatureSelectorStep(FeatureSelector):
                 and self.numeric_criterium_path[-1] < self.stopping_criterium
             ):
                 break
+            print("Feature selected: ", self.data_frame.columns[values["idx"]])
+            print("Criterium value: ", values["criterium"])
         self.time = time.time() - start

@@ -1,4 +1,4 @@
-from feature_selector_arbitrary import FeatureSelectorArbitrary
+from src.feature_selector_arbitrary import FeatureSelectorArbitrary
 import numpy as np
 import time
 from sklearn.linear_model import LassoCV

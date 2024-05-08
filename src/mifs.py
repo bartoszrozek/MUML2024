@@ -1,15 +1,17 @@
-from feature_selector_step import FeatureSelectorStep
+from src.feature_selector_step import FeatureSelectorStep
 from sklearn.metrics import mutual_info_score
 import numpy as np
 
-class MIFS(FeatureSelectorStep):
 
-    def __init__(self, 
-                 data_frame, 
-                 unique_th=50, 
-                 stopping_criterium: float = None, 
-                 stopping_n_features: int = None, 
-                 beta: int=1) -> None:
+class MIFS(FeatureSelectorStep):
+    def __init__(
+        self,
+        data_frame,
+        unique_th=50,
+        stopping_criterium: float = None,
+        stopping_n_features: int = None,
+        beta: int = 1,
+    ) -> None:
         self.beta = beta
         super().__init__(data_frame, unique_th, stopping_criterium, stopping_n_features)
 
@@ -38,7 +40,7 @@ class MIFS(FeatureSelectorStep):
 
     def second_term(self, new_feature_idx):
         features_idxs = self._features
-        return self.beta*np.sum(
+        return self.beta * np.sum(
             [
                 mutual_info_score(
                     self._data_frame_np[:, new_feature_idx],

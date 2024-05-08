@@ -1,6 +1,6 @@
 # Just to keep structure
 
-from feature_selector import FeatureSelector
+from src.feature_selector import FeatureSelector
 from abc import abstractmethod
 
 

@@ -1,5 +1,5 @@
-from feature_selector import conditional_mutual_information
-from feature_selector_step import FeatureSelectorStep
+from src.feature_selector import conditional_mutual_information
+from src.feature_selector_step import FeatureSelectorStep
 from sklearn.metrics import mutual_info_score
 import numpy as np
 
