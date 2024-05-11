@@ -8,7 +8,7 @@ class FeatureSelector(ABC):
         self,
         data_frame,
         unique_th=50,
-        stopping_criterium: float = None,
+        stopping_criterium: bool = True,
         stopping_n_features: int = None,
     ) -> None:
         self.data_frame = data_frame.copy()
@@ -18,9 +18,10 @@ class FeatureSelector(ABC):
                 self._data_frame_np[:, col_id] = discretize(
                     self._data_frame_np[:, col_id]
                 )
+        self._data_frame_np = np.int16(self._data_frame_np)
         self._features: list[int] = []
         self._features_path: list = []
-        self.numeric_criterium_path: list[list] = []
+        self.numeric_statistic_path: list[list] = []
         self.stopping_criterium = stopping_criterium
         self.stopping_n_features = (
             stopping_n_features
@@ -48,7 +49,7 @@ class FeatureSelector(ABC):
 def discretize(vec: np.array, n_bins: int = 10):
     vec_bins = np.linspace(vec.min(), vec.max(), n_bins)
     vec_discrete = np.digitize(vec, bins=vec_bins)
-    return vec_discrete
+    return np.int16(vec_discrete)
 
 
 def conditional_mutual_information(X, Y, Z):
