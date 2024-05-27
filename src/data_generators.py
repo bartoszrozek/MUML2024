@@ -20,9 +20,11 @@ def draw_function():
     key = random.choice(list(function_set.keys()))
     return {"key": key, "func": function_set[key]}
 
+
 def bin_array(num, m):
     """Convert a positive integer num into an m-bit bit vector"""
     return np.array(list(np.binary_repr(num).zfill(m))).astype(np.int8)
+
 
 class DataSetGenerator:
     def __init__(
@@ -65,6 +67,12 @@ class DataSetGenerator:
         )
         n = n if n is not None else self.n
 
+        sign_names = {
+            "significant_names": [],
+            "semi_significant_names": [],
+            "non_significant_names": [],
+        }
+
         generator = np.random.default_rng()
         y = generator.standard_normal(n)
         columns = []
@@ -73,7 +81,9 @@ class DataSetGenerator:
             corr = generator.uniform(0.3, 0.9)
             func = draw_function()
             columns.append(new_column(y, corr, func["func"]).reshape(n, 1))
-            names.append(f"significant_{func['key']}_{np.round(corr,5)}")
+            col_name = f"significant_{func['key']}_{np.round(corr,5)}"
+            names.append(col_name)
+            sign_names["significant_names"].append(col_name)
         for _ in range(n_significant, n_significant + n_semi_significant):
             corr = generator.uniform(0.3, 0.9)
             func = draw_function()
@@ -81,16 +91,23 @@ class DataSetGenerator:
             columns.append(
                 new_column(columns[idx].flatten(), corr, func["func"]).reshape(n, 1)
             )
-            names.append(f"{names[idx+1]}_{np.round(corr,5)}")
+            col_name = f"{names[idx+1]}_{np.round(corr,5)}"
+            names.append(col_name)
+            sign_names["semi_significant_names"].append(col_name)
         for i in range(n_significant + n_semi_significant, n_features):
             func = draw_function()
             columns.append(func["func"](generator.standard_normal(n)).reshape(n, 1))
-            names.append(f"nsignificant_{func['key']}_{i+1}")
+            col_name = f"nsignificant_{func['key']}_{i+1}"
+            names.append(col_name)
+            sign_names["non_significant_names"].append(col_name)
 
-        return pd.DataFrame(
-            np.concatenate((y.reshape(n, 1), *columns), axis=1), columns=names
+        return (
+            pd.DataFrame(
+                np.concatenate((y.reshape(n, 1), *columns), axis=1), columns=names
+            ),
+            sign_names,
         )
-    
+
     def set_2(
         self,
         n_features: int | None = None,
@@ -105,14 +122,14 @@ class DataSetGenerator:
         Significant columns represent dimensions of a hypercube.
         Half of each significant feature's observations are from distribution N(mu, sigma2)
         and the other are from N(-mu, sigma2).
-        
+
         Points in clusters at each corner of the hypercube are assigned binary classes randomly
         with probability p.
 
         Semi-significant columns are obtained by transforming significant features.
 
         Args:
-            n_features (int): number of 
+            n_features (int): number of
             n_significant (int): _description_
             n (int, optional): _description_. Defaults to 1000.
             mu (int): parameter of the distribution of significant functions
@@ -132,7 +149,11 @@ class DataSetGenerator:
         )
         n = n if n is not None else self.n
 
-        
+        sign_names = {
+            "significant_names": [],
+            "semi_significant_names": [],
+            "non_significant_names": [],
+        }
         generator = np.random.default_rng()
         columns = []
         names = ["y"]
@@ -140,15 +161,19 @@ class DataSetGenerator:
         significant_features = generator.normal(mu, sigma2, (n, n_significant))
         y = np.ones(n)
 
-        n_vertices = 2 ** n_significant
+        n_vertices = 2**n_significant
         for i in range(n_vertices):
-            lower = (n//n_vertices)*i
-            upper = min((n//n_vertices)*(i+1), n)
-            significant_features[lower:upper] = significant_features[lower:upper] * (bin_array(i, n_significant)*2-1)
+            lower = (n // n_vertices) * i
+            upper = min((n // n_vertices) * (i + 1), n)
+            significant_features[lower:upper] = significant_features[lower:upper] * (
+                bin_array(i, n_significant) * 2 - 1
+            )
             y[lower:upper] = y[lower:upper] * generator.binomial(1, p)
         for i in range(n_significant):
             columns.append(significant_features[:, i].reshape(n, 1))
-            names.append(f"significant_{i}")
+            col_name = f"significant_{i}"
+            names.append(col_name)
+            sign_names["significant_names"].append(col_name)
         for _ in range(n_significant, n_significant + n_semi_significant):
             corr = generator.uniform(0.3, 0.9)
             func = draw_function()
@@ -156,12 +181,19 @@ class DataSetGenerator:
             columns.append(
                 new_column(columns[idx].flatten(), corr, func["func"]).reshape(n, 1)
             )
-            names.append(f"{names[idx+1]}_{np.round(corr,5)}")
+            col_name = f"{names[idx+1]}_{np.round(corr,5)}"
+            names.append(col_name)
+            sign_names["semi_significant_names"].append(col_name)
         for i in range(n_significant + n_semi_significant, n_features):
             func = draw_function()
             columns.append(func["func"](generator.standard_normal(n)).reshape(n, 1))
-            names.append(f"nsignificant_{func['key']}_{i+1}")
+            col_name = f"nsignificant_{func['key']}_{i+1}"
+            names.append(col_name)
+            sign_names["non_significant_names"].append(col_name)
 
-        return pd.DataFrame(
-            np.concatenate((y.reshape(n, 1), *columns), axis=1), columns=names
+        return (
+            pd.DataFrame(
+                np.concatenate((y.reshape(n, 1), *columns), axis=1), columns=names
+            ),
+            sign_names,
         )

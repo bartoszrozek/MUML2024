@@ -9,7 +9,7 @@ class FeatureSelectorStep(FeatureSelector):
     def select_next_feature(self):
         pass
 
-    def run_fs(self):
+    def run_fs(self, verbose=False):
         start = time.time()
         while len(self._features) < self.stopping_n_features:
             start_one = time.time()
@@ -18,8 +18,9 @@ class FeatureSelectorStep(FeatureSelector):
             self._features.append(values["idx"])
             self._features_path.append(self._features.copy())
             self.numeric_statistic_path.append(values["criterium"])
-            print("Feature selected: ", self.data_frame.columns[values["idx"]])
-            print("Criterium value: ", values["criterium"])
+            if verbose:
+                print("Feature selected: ", self.data_frame.columns[values["idx"]])
+                print("Criterium value: ", values["criterium"])
             if len(self._features) > 1:
                 kn = KneeLocator(
                     range(1, len(self.numeric_statistic_path) + 1),
